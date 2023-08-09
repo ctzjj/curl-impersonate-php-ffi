@@ -1,0 +1,20 @@
+{
+    "name": "ctzjj/curl-impersonate-php-ffi",
+    "type": "library",
+    "require": {
+        "php": "^7.4",
+        "ext-ffi": "*"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Ctzjj\\CurlImpersonate\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "zjj",
+            "email": "xxxxx@qq.com"
+        }
+    ]
+}

@@ -1,1 +1,10 @@
 # curl-impersonate-php-ffi
+
+  ⚠ Not tested, pleasedo not use in production environment.
+  
+#### referer：
+  - https://github.com/lwthiker/curl-impersonate
+  - https://www.laruence.com/2020/03/11/5475.html
+  - https://github.com/curl/curl/blob/master/include/curl/curl.h
+  - https://github.com/php/php-src/blob/php-7.4.33/ext/curl/interface.c
+    
