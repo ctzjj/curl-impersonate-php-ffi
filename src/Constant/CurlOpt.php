@@ -307,12 +307,12 @@ class CurlOpt {
     const CURLOPT_MIME_OPTIONS = 0 + 315;
     const CURLOPT_SSH_HOSTKEYFUNCTION = 20000 + 316;
     const CURLOPT_SSH_HOSTKEYDATA = 10000 + 317;
-    const CURLOPT_HTTPBASEHEADER = 10000 + 318;
-    const CURLOPT_SSL_SIG_HASH_ALGS = 10000 + 319;
-    const CURLOPT_SSL_ENABLE_ALPS = 0 + 320;
-    const CURLOPT_SSL_CERT_COMPRESSION = 10000 + 321;
-    const CURLOPT_SSL_ENABLE_TICKET = 0 + 322;
-    const CURLOPT_HTTP2_PSEUDO_HEADERS_ORDER = 10000 + 323;
-    const CURLOPT_HTTP2_NO_SERVER_PUSH = 0 + 324;
-    const CURLOPT_SSL_PERMUTE_EXTENSIONS = 0 + 325;
+    const CURLOPT_HTTPBASEHEADER = 10000 + 318; // if default_headers is non-zero (this is a non-standard HTTP option created for this project)
+    const CURLOPT_SSL_SIG_HASH_ALGS = 10000 + 319; // non-standard HTTP/2 options created for this project
+    const CURLOPT_SSL_ENABLE_ALPS = 0 + 320; // non-standard HTTP/2 options created for this project
+    const CURLOPT_SSL_CERT_COMPRESSION = 10000 + 321; // non-standard HTTP/2 options created for this project
+    const CURLOPT_SSL_ENABLE_TICKET = 0 + 322; // non-standard HTTP/2 options created for this project
+    const CURLOPT_HTTP2_PSEUDO_HEADERS_ORDER = 10000 + 323; // non-standard HTTP/2 options created for this project
+    const CURLOPT_HTTP2_NO_SERVER_PUSH = 0 + 324; // non-standard HTTP/2 options created for this project
+    const CURLOPT_SSL_PERMUTE_EXTENSIONS = 0 + 325; // non-standard HTTP/2 options created for this project.  Note that if you call curl_easy_setopt() later with one of the above it will override the options set by curl_easy_impersonate()
 }

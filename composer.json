@@ -2,7 +2,7 @@
     "name": "ctzjj/curl-impersonate-php-ffi",
     "type": "library",
     "require": {
-        "php": "^7.4",
+        "php": ">7.4",
         "ext-ffi": "*"
     },
     "license": "MIT",
@@ -16,5 +16,8 @@
             "name": "zjj",
             "email": "xxxxx@qq.com"
         }
-    ]
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
+    }
 }

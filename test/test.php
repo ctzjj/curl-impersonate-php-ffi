@@ -3,17 +3,19 @@ require_once '../vendor/autoload.php';
 
 use Ctzjj\CurlImpersonate\Constant\CurlInfo;
 use Ctzjj\CurlImpersonate\Constant\CurlOpt;
+use Ctzjj\CurlImpersonate\Curl;
 use Ctzjj\CurlImpersonate\Impersonate;
 
 
 
 /**
- * @var \Ctzjj\CurlImpersonate\Curl
+ * @var Curl
  */
-$curl = Impersonate::getCurlInstance(Impersonate::CHROME_110);
+$curl = Impersonate::getCurlInstance(Impersonate::FIREFOX_98);
 
 $url = "https://tls.browserleaks.com/json";
 //$url = "https://www.baidu.com";
+//$url = "http://curl.test";
 
 $ch = $curl->curlInit();
 
@@ -26,6 +28,7 @@ $curl->curlSetOpt($ch, CurlOpt::CURLOPT_URL, $url);
 $curl->curlSetOpt($ch, CurlOpt::CURLOPT_CERTINFO, 1);
 $curl->curlSetOpt($ch, CurlOpt::CURLOPT_SSL_VERIFYPEER, 0);
 $curl->curlSetOpt($ch, CurlOpt::CURLOPT_HEADER, true);
+$curl->curlSetOpt($ch, CurlOpt::CURLOPT_HTTPHEADER, ['x-requested-with:AJAX-32134214392fqr321df2r3=============']);
 
 $ret = $curl->curlExec($ch);
 //var_dump($curl->curlGetInfo($ch, CurlInfo::CURLINFO_CERTINFO));

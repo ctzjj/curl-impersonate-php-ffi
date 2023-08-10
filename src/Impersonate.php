@@ -40,7 +40,7 @@ class Impersonate {
     const SAFARI_15_5 = 'safari15_5';
 
 
-    public static function getCurlInstance($impersonate = self::CHROME_110) : Curl {
+    public static function getCurlInstance(string $impersonate = self::CHROME_110) : Curl {
         $browser = self::getBrowser($impersonate);
         $pathInfo = self::getLibFilePathInfo($browser);
         return new Curl($impersonate, $pathInfo['libCurlPath'], $pathInfo['libWritePath']);
@@ -51,21 +51,16 @@ class Impersonate {
      * @param $impersonate
      * @return string
      */
-    public static function getBrowser($impersonate) : string {
+    public static function getBrowser(string $impersonate) : string {
         $chromeImpersonateList = [
-            self::CHROME_99,
-            self::CHROME_100,
-            self::CHROME_101,
-            self::CHROME_104,
-            self::CHROME_107,
-            self::CHROME_110,
-            self::CHROME_99_ANDROID,
-            self::CHROME_EDGE_99,
-            self::CHROME_EDGE_101,
-            self::SAFARI_15_3,
-            self::SAFARI_15_5
+            self::FIREFOX_91_ESR,
+            self::FIREFOX_95,
+            self::FIREFOX_98,
+            self::FIREFOX_100,
+            self::FIREFOX_102,
+            self::FIREFOX_109
         ];
-        return in_array($impersonate, $chromeImpersonateList, true) ? 'chrome': 'ff';
+        return in_array($impersonate, $chromeImpersonateList, true) ? 'ff': 'chrome';
     }
 
     /**
@@ -88,7 +83,7 @@ class Impersonate {
             }
         }
         if (PHP_OS === 'WINNT') {
-            $libCurlPath = $dir . '/lib/libcurl-impersonate.x86_64.dll';
+            $libCurlPath = $dir . '/lib/libcurl-impersonate-' . $browser . '.x86_64.dll';
             $libWritePath = $dir . '/lib/write.x86_64.dll';
         }
         if (PHP_OS === 'Darwin') {

@@ -16,6 +16,8 @@ class Curl {
 
     private FFI\CData $writeData;
 
+    private array $curlOptSlistPtrs = [];
+
     public function __construct($impersonate, $libCurlPath, $libWritePath) {
         $this->impersonate = $impersonate;
         $this->libCurlFFI = $this->getCurlFFI($libCurlPath);
@@ -45,11 +47,38 @@ class Curl {
      * @return bool
      */
     public function curlSetOpt($ch, $option, $value) {
+        $slisTypeList = [
+            CurlOpt::CURLOPT_HTTPHEADER, // This points to a linked list of headers, struct curl_slist kind. This list is also used for RTSP (in spite of its name)
+            CurlOpt::CURLOPT_QUOTE, // send linked-list of QUOTE commands
+            CurlOpt::CURLOPT_POSTQUOTE, // send linked-list of post-transfer QUOTE commands
+            CurlOpt::CURLOPT_TELNETOPTIONS, // This points to a linked list of telnet options
+            CurlOpt::CURLOPT_PREQUOTE, // send linked-list of pre-transfer QUOTE commands
+            CurlOpt::CURLOPT_HTTP200ALIASES, // Set aliases for HTTP 200 in the HTTP Response header
+            CurlOpt::CURLOPT_MAIL_RCPT, // set the list of SMTP mail receiver(s)
+            CurlOpt::CURLOPT_RESOLVE, //send linked-list of name:port:address sets
+            CurlOpt::CURLOPT_PROXYHEADER, // This points to a linked list of headers used for proxy requests only, struct curl_slist kind
+            CurlOpt::CURLOPT_CONNECT_TO, // Linked-list of host:port:connect-to-host:connect-to-port,overrides the URL's host:port (only for the network layer)
+        ];
+        if (in_array($option, $slisTypeList, true)) {
+            $curlSlist = $this->libCurlFFI->new('curl_slist*');
+            foreach ($value as $val) {
+                $curlSlist = $this->libCurlFFI->curl_slist_append($curlSlist, $val);
+            }
+            $curlCode = $this->libCurlFFI->curl_easy_setopt($ch, $option, $curlSlist);
+            $this->curlOptSlistPtrs[] = &$curlSlist;
+            return $curlCode;
+        }
         return $this->libCurlFFI->curl_easy_setopt($ch, $option, $value);
     }
 
     public function curlExec($ch) {
         $int = $this->libCurlFFI->curl_easy_perform($ch);
+
+        // free opt slist
+        foreach ($this->curlOptSlistPtrs as &$ptr) {
+            $this->libCurlFFI->curl_slist_free_all($ptr);
+        }
+        $this->curlOptSlistPtrs = [];
 
         if ($int !== CurlOpt::CURLOPT_OK) {
             FFI::free(FFI::addr($this->writeData));
@@ -249,5 +278,11 @@ class Curl {
             }
         }
         return null;
+    }
+
+    public function __destruct() {
+        foreach ($this->curlOptSlistPtrs as $ptr) {
+            $this->libCurlFFI->curl_slist_free_all($ptr);
+        }
     }
 }
