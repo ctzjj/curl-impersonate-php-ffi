@@ -12,7 +12,13 @@ class Curl {
 
     private FFI $libWriteFFI;
 
+    private FFI\CData $ch;
+
     private String $impersonate;
+
+    private int $returnType;
+
+    private int $errorNo;
 
     private FFI\CData $writeData;
 
@@ -20,22 +26,25 @@ class Curl {
 
     public function __construct($impersonate, $libCurlPath, $libWritePath) {
         $this->impersonate = $impersonate;
+        $this->returnType = 0;
+        $this->errorNo = 0;
         $this->libCurlFFI = $this->getCurlFFI($libCurlPath);
         $this->libWriteFFI = $this->getWriteFFI($libWritePath);
+        $this->curlInit();
     }
 
     /**
      * curlEasyInit
      *
-     * @return resource | false
+     * @return FFI\CData
      */
-    public function curlInit() {
+    private function curlInit() {
         $this->writeData = $this->libWriteFFI->new("own_write_data");
-        $ch = $this->libCurlFFI->curl_easy_init();
-        $this->curlImpersonate($ch, $this->impersonate, true);
-        $this->curlSetOpt($ch, CurlOpt::CURLOPT_WRITEDATA, FFI::addr($this->writeData));
-        $this->curlSetOpt($ch, CurlOpt::CURLOPT_WRITEFUNCTION, $this->libWriteFFI->init());
-        return $ch;
+        $this->ch = $this->libCurlFFI->curl_easy_init();
+        if (FFI::isNull($this->ch)) {
+            throw new RuntimeException("curl init fail.");
+        }
+        $this->curlImpersonate($this->impersonate, true);
     }
 
     /**
@@ -46,7 +55,7 @@ class Curl {
      * @param mixed $value
      * @return bool
      */
-    public function curlSetOpt($ch, $option, $value) {
+    public function curlSetOpt($option, $value) {
         $slisTypeList = [
             CurlOpt::CURLOPT_HTTPHEADER, // This points to a linked list of headers, struct curl_slist kind. This list is also used for RTSP (in spite of its name)
             CurlOpt::CURLOPT_QUOTE, // send linked-list of QUOTE commands
@@ -64,15 +73,22 @@ class Curl {
             foreach ($value as $val) {
                 $curlSlist = $this->libCurlFFI->curl_slist_append($curlSlist, $val);
             }
-            $curlCode = $this->libCurlFFI->curl_easy_setopt($ch, $option, $curlSlist);
+            $curlCode = $this->libCurlFFI->curl_easy_setopt($this->ch, $option, $curlSlist);
             $this->curlOptSlistPtrs[] = &$curlSlist;
             return $curlCode;
         }
-        return $this->libCurlFFI->curl_easy_setopt($ch, $option, $value);
+
+        if ((CurlOpt::CURLOPT_RETURNTRANSFER === $option) && ($value == true)) {
+            $this->returnType = CurlOpt::CURLOPT_RETURNTRANSFER;
+            $this->libCurlFFI->curl_easy_setopt($this->ch, CurlOpt::CURLOPT_WRITEDATA, FFI::addr($this->writeData));
+            return $this->libCurlFFI->curl_easy_setopt($this->ch, CurlOpt::CURLOPT_WRITEFUNCTION, $this->libWriteFFI->init());
+        }
+
+        return $this->libCurlFFI->curl_easy_setopt($this->ch, $option, $value);
     }
 
-    public function curlExec($ch) {
-        $int = $this->libCurlFFI->curl_easy_perform($ch);
+    public function curlExec() {
+        $int = $this->libCurlFFI->curl_easy_perform($this->ch);
 
         // free opt slist
         foreach ($this->curlOptSlistPtrs as &$ptr) {
@@ -81,20 +97,32 @@ class Curl {
         $this->curlOptSlistPtrs = [];
 
         if ($int !== CurlOpt::CURLOPT_OK) {
+            $this->errorNo = $int;
             FFI::free(FFI::addr($this->writeData));
             return false;
         }
 
-        $result =  FFI::string($this->writeData->buf, $this->writeData->size);
-        FFI::free(FFI::addr($this->writeData));
-        return $result;
+        if (CurlOpt::CURLOPT_RETURNTRANSFER === $this->returnType) {
+            $result =  FFI::string($this->writeData->buf, $this->writeData->size);
+            FFI::free(FFI::addr($this->writeData));
+            return $result;
+        }
+        // TODO
+//        if (CurlOpt::CURLOPT_FILE === $this->returnType) {
+//
+//        }
+        return true;
     }
 
-    public function curlClose($ch) {
-        return $this->libCurlFFI->curl_easy_cleanup($ch);
+    public function curlErrorNo() {
+        return $this->errorNo;
     }
 
-    public function curlGetInfo($ch, $option = null) {
+    public function curlClose() {
+        return $this->libCurlFFI->curl_easy_cleanup($this->ch);
+    }
+
+    public function curlGetInfo($option = null) {
 
         $cTypeMap = [
             CurlInfo::CURLINFO_EFFECTIVE_URL => ['type' => 'string', 'key' => 'url'],
@@ -139,7 +167,7 @@ class Curl {
         if (null === $option) {
             $info = [];
             foreach ($cTypeMap as $curlInfo => $dataInfo) {
-                $info[$dataInfo['key']] = $this->getCurlInfoValue($ch, $curlInfo, $dataInfo['type']);
+                $info[$dataInfo['key']] = $this->getCurlInfoValue($curlInfo, $dataInfo['type']);
             }
             return $info;
         }
@@ -149,11 +177,11 @@ class Curl {
         }
 
         $dataInfo = $cTypeMap[$option];
-        return $this->getCurlInfoValue($ch, $option, $dataInfo['type']);
+        return $this->getCurlInfoValue($option, $dataInfo['type']);
     }
 
-    public function curlEasyReset($ch) {
-        return $this->libCurlFFI->curl_easy_reset($ch);
+    public function curlReset() {
+        return $this->libCurlFFI->curl_easy_reset($this->ch);
     }
 
     public function curlVersion() {
@@ -200,9 +228,9 @@ class Curl {
         return $info;
     }
 
-    public function curlImpersonate($ch, string $impersonate, bool $defaultHeaders) {
+    public function curlImpersonate(string $impersonate, bool $defaultHeaders) {
         $this->compareImpersonateBrowser($impersonate);
-        return $this->libCurlFFI->curl_easy_impersonate($ch, $impersonate, $defaultHeaders);
+        return $this->libCurlFFI->curl_easy_impersonate($this->ch, $impersonate, $defaultHeaders);
     }
 
     private function getCurlFFI($curlPath) {
@@ -221,24 +249,24 @@ class Curl {
         }
     }
 
-    private function getCurlInfoValue($ch, $curlInfo, $cType) {
+    private function getCurlInfoValue($curlInfo, $cType) {
         $string = FFI::new("char*");
         $long = FFI::new("long");
         $double = FFI::new("double");
         if ($cType === 'long') {
-            if (CurlOpt::CURLOPT_OK === $this->libCurlFFI->curl_easy_getinfo($ch, $curlInfo, FFI::addr($long))) {
+            if (CurlOpt::CURLOPT_OK === $this->libCurlFFI->curl_easy_getinfo($this->ch, $curlInfo, FFI::addr($long))) {
                 return $long->cdata;
             }
         }
 
         if ($cType === 'double') {
-            if (CurlOpt::CURLOPT_OK === $this->libCurlFFI->curl_easy_getinfo($ch, $curlInfo, FFI::addr($double))) {
+            if (CurlOpt::CURLOPT_OK === $this->libCurlFFI->curl_easy_getinfo($this->ch, $curlInfo, FFI::addr($double))) {
                 return $double->cdata;
             }
         }
 
         if ($cType === 'string') {
-            if (CurlOpt::CURLOPT_OK === $this->libCurlFFI->curl_easy_getinfo($ch, $curlInfo, FFI::addr($string))) {
+            if (CurlOpt::CURLOPT_OK === $this->libCurlFFI->curl_easy_getinfo($this->ch, $curlInfo, FFI::addr($string))) {
                 if (FFI::isNull($string)) {
                     return null;
                 }
@@ -247,7 +275,7 @@ class Curl {
         }
         if ($cType === 'curl_certinfo') {
             $certInfo = $this->libCurlFFI->new('curl_certinfo*');
-            if (CurlOpt::CURLOPT_OK === $this->libCurlFFI->curl_easy_getinfo($ch, $curlInfo, FFI::addr($certInfo))) {
+            if (CurlOpt::CURLOPT_OK === $this->libCurlFFI->curl_easy_getinfo($this->ch, $curlInfo, FFI::addr($certInfo))) {
                 if (FFI::isNull($certInfo)) {
                     return [];
                 }
@@ -283,6 +311,10 @@ class Curl {
     public function __destruct() {
         foreach ($this->curlOptSlistPtrs as $ptr) {
             $this->libCurlFFI->curl_slist_free_all($ptr);
+        }
+
+        if (!FFI::isNull($this->ch)) {
+            $this->libCurlFFI->curl_easy_cleanup($this->ch);
         }
     }
 }

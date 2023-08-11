@@ -22,31 +22,27 @@ class CurlTest extends TestCase {
 
     public function testCurlImpersonateFF() {
         $curl = Impersonate::getCurlInstance(Impersonate::FIREFOX_98);
-        $ch = $curl->curlInit();
         if (PHP_OS === 'WINNT') {
             $this->assertTrue(true);
         } else {
-            $this->assertTrue(0 === $curl->curlImpersonate($ch, Impersonate::FIREFOX_109, 1));
+            $this->assertTrue(0 === $curl->curlImpersonate(Impersonate::FIREFOX_109, 1));
         }
 
         $this->expectException(\RuntimeException::class);
-        $curl->curlImpersonate($ch, Impersonate::CHROME_100, 1);
+        $curl->curlImpersonate(Impersonate::CHROME_100, 1);
     }
 
     public function testCurlImpersonateChrome() {
         $curl = Impersonate::getCurlInstance(Impersonate::CHROME_100);
-        $ch = $curl->curlInit();
-        $this->assertTrue(0 === $curl->curlImpersonate($ch, Impersonate::CHROME_110, 1));
+        $this->assertTrue(0 === $curl->curlImpersonate(Impersonate::CHROME_110, 1));
 
         $this->expectException(\RuntimeException::class);
-        $curl->curlImpersonate($ch, Impersonate::FIREFOX_109, 1);
-        $curl->curlClose($ch);
+        $curl->curlImpersonate(Impersonate::FIREFOX_109, 1);
     }
 
     public function testCurlGetInfo() {
         $curl = Impersonate::getCurlInstance(Impersonate::CHROME_100);
-        $ch = $curl->curlInit();
-        $info = $curl->curlGetInfo($ch);
+        $info = $curl->curlGetInfo();
         $keys = array (
             0 => 'url',
             1 => 'content_type',
@@ -90,7 +86,6 @@ class CurlTest extends TestCase {
         foreach ($keys as $k) {
             $this->assertTrue(array_key_exists($k, $info));
         }
-        $curl->curlClose($ch);
     }
 
     public function testCurlVersion() {

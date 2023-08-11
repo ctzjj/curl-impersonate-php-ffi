@@ -1,3 +1,4 @@
+int curl_global_init(long flags);
 void *curl_easy_init();
 int curl_easy_setopt(void *curl, int option, ...);
 int curl_easy_perform(void *curl);
@@ -8,7 +9,8 @@ char *curl_version();
 int curl_easy_impersonate(void *curl, char *target, int default_headers);
 struct curl_slist *curl_slist_append(struct curl_slist *list, char *string);
 void curl_slist_free_all(struct curl_slist *list);
-struct curl_version_info_data *curl_version_info(enum CURLversion);
+struct curl_version_info_data *curl_version_info(int version);
+void curl_global_cleanup(void);
 
 void *curl_multi_init();
 int curl_multi_cleanup(void *curlm);

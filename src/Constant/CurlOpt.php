@@ -315,4 +315,6 @@ class CurlOpt {
     const CURLOPT_HTTP2_PSEUDO_HEADERS_ORDER = 10000 + 323; // non-standard HTTP/2 options created for this project
     const CURLOPT_HTTP2_NO_SERVER_PUSH = 0 + 324; // non-standard HTTP/2 options created for this project
     const CURLOPT_SSL_PERMUTE_EXTENSIONS = 0 + 325; // non-standard HTTP/2 options created for this project.  Note that if you call curl_easy_setopt() later with one of the above it will override the options set by curl_easy_impersonate()
+    const CURLOPT_RETURNTRANSFER = 19913;
+    const CURLOPT_FILE = 10001;
 }
