@@ -11,6 +11,7 @@ struct curl_slist *curl_slist_append(struct curl_slist *list, char *string);
 void curl_slist_free_all(struct curl_slist *list);
 struct curl_version_info_data *curl_version_info(int version);
 void curl_global_cleanup(void);
+char *curl_easy_strerror(int errno);
 
 void *curl_multi_init();
 int curl_multi_cleanup(void *curlm);
@@ -20,6 +21,7 @@ int curl_multi_socket_action(void *curlm, int sockfd, int ev_bitmask, int *runni
 int curl_multi_setopt(void *curlm, int option, ...);
 int curl_multi_assign(void *curlm, int sockfd, void *sockptr);
 struct CURLMsg *curl_multi_info_read(void* curlm, int *msg_in_queue);
+char *curl_multi_strerror(int errmno);
 
 typedef struct curl_slist {
   char *data;

@@ -15,14 +15,14 @@ $curl = Impersonate::getCurlInstance(Impersonate::CHROME_110);
 
 //$url = "https://tls.browserleaks.com/json";
 //$url = "https://www.baidu.com";
-//$url = "http://curl.test";
-$url = 'https://ascii2d.net';
+$url = "http://curl.test";
+//$url = 'https://ascii2d.net';
 
 
 var_dump($curl->curlVersion()['ssl_version']);
 echo PHP_EOL;
 
-//$curl->curlSetOpt(CurlOpt::CURLOPT_TIMEOUT, 5);
+$curl->curlSetOpt(CurlOpt::CURLOPT_TIMEOUT, 5);
 $curl->curlSetOpt(CurlOpt::CURLOPT_URL, $url);
 $curl->curlSetOpt(CurlOpt::CURLOPT_CERTINFO, 1);
 $curl->curlSetOpt(CurlOpt::CURLOPT_SSL_VERIFYPEER, 0);
@@ -49,6 +49,8 @@ echo PHP_EOL;
 $curl->curlClose();
 echo PHP_EOL;
 echo $ret;
+
+echo $curl->curlError();
 
 //$ch = curl_init();
 //curl_setopt($ch, CURLOPT_URL, $url);

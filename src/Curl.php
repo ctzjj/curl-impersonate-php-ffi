@@ -20,6 +20,8 @@ class Curl {
 
     private int $errorNo;
 
+    private bool $isDestroyed;
+
     private FFI\CData $writeData;
 
     private array $curlOptSlistPtrs = [];
@@ -44,6 +46,7 @@ class Curl {
         if (FFI::isNull($this->ch)) {
             throw new RuntimeException("curl init fail.");
         }
+        $this->isDestroyed = false;
         $this->curlImpersonate($this->impersonate, true);
     }
 
@@ -98,13 +101,13 @@ class Curl {
 
         if ($int !== CurlOpt::CURLOPT_OK) {
             $this->errorNo = $int;
-            FFI::free(FFI::addr($this->writeData));
+            // FFI::free(FFI::addr($this->writeData));
             return false;
         }
 
         if (CurlOpt::CURLOPT_RETURNTRANSFER === $this->returnType) {
             $result =  FFI::string($this->writeData->buf, $this->writeData->size);
-            FFI::free(FFI::addr($this->writeData));
+            // FFI::free(FFI::addr($this->writeData));
             return $result;
         }
         // TODO
@@ -118,8 +121,20 @@ class Curl {
         return $this->errorNo;
     }
 
+    public function curlError() {
+        if ($this->errorNo == 0) {
+            return '';
+        }
+        $ret =  $this->libCurlFFI->curl_easy_strerror($this->errorNo);
+        return FFI::string($ret);
+    }
+
     public function curlClose() {
-        return $this->libCurlFFI->curl_easy_cleanup($this->ch);
+        if ($this->isDestroyed) {
+            return ;
+        }
+        $this->libCurlFFI->curl_easy_cleanup($this->ch);
+        $this->isDestroyed = true;
     }
 
     public function curlGetInfo($option = null) {
@@ -313,7 +328,7 @@ class Curl {
             $this->libCurlFFI->curl_slist_free_all($ptr);
         }
 
-        if (!FFI::isNull($this->ch)) {
+        if (!$this->isDestroyed) {
             $this->libCurlFFI->curl_easy_cleanup($this->ch);
         }
     }

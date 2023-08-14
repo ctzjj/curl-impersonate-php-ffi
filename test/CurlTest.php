@@ -13,21 +13,12 @@ class CurlTest extends TestCase {
 
     public function testCurlFirefox() {
         $curl = Impersonate::getCurlInstance(Impersonate::FIREFOX_98);
-        if (PHP_OS === 'WINNT') {
-            $this->assertTrue("BoringSSL" === $curl->curlVersion()['ssl_version']);
-        } else {
-            $this->assertTrue("NSS/3.87" === $curl->curlVersion()['ssl_version']);
-        }
+        $this->assertTrue("NSS/3.87" === $curl->curlVersion()['ssl_version']);
     }
 
     public function testCurlImpersonateFF() {
         $curl = Impersonate::getCurlInstance(Impersonate::FIREFOX_98);
-        if (PHP_OS === 'WINNT') {
-            $this->assertTrue(true);
-        } else {
-            $this->assertTrue(0 === $curl->curlImpersonate(Impersonate::FIREFOX_109, 1));
-        }
-
+        $this->assertTrue(0 === $curl->curlImpersonate(Impersonate::FIREFOX_109, 1));
         $this->expectException(\RuntimeException::class);
         $curl->curlImpersonate(Impersonate::CHROME_100, 1);
     }
