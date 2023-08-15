@@ -1,5 +1,6 @@
 {
     "name": "ctzjj/curl-impersonate-php-ffi",
+    "description": "curl-impersonate-php-ffi",
     "type": "library",
     "require": {
         "php": ">7.4",
