@@ -1,6 +1,8 @@
-typedef struct _writedata {
-	void *buf;
+
+typedef struct MemoryData {
+	char *data;
 	size_t size;
-} own_write_data;
+} memory_data;
+
 
 void *init();

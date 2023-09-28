@@ -2,30 +2,20 @@
 #include <string.h>
 #include "write.h"
 
-// referer https://www.laruence.com/2020/03/11/5475.html
-size_t own_writefunc(void *ptr, size_t size, size_t nmember, void *data) {
-	own_write_data *d = (own_write_data*)data;
-	size_t total = size * nmember;
-
-	if (d->buf == NULL) {
-		d->buf = malloc(total);
-		if (d->buf == NULL) {
-			return 0;
-		}
-		d->size = total;
-		memcpy(d->buf, ptr, total);
-	} else {
-		d->buf = realloc(d->buf, d->size + total);
-		if (d->buf == NULL) {
-			return 0;
-		}
-		memcpy(d->buf + d->size, ptr, total);
-		d->size += total;
+size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
+	size_t total_size = size * nmemb;
+	memory_data *md = (memory_data*) userp;
+	md->data = realloc(md->data, md->size + total_size + 1);
+	if (md->data == NULL) {
+		/* out of memory! */
+		return 0;
 	}
-
-	return total;
+	memcpy(&(md->data[md->size]), contents, total_size);
+	md->size += total_size;
+	md->data[md->size] = 0;
+	return total_size;
 }	
 
 void * init() {
-	return &own_writefunc;
+	return &write_callback;
 }

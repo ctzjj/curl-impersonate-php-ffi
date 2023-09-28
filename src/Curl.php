@@ -41,7 +41,6 @@ class Curl {
      * @return FFI\CData
      */
     private function curlInit() {
-        $this->writeData = $this->libWriteFFI->new("own_write_data");
         $this->ch = $this->libCurlFFI->curl_easy_init();
         if (FFI::isNull($this->ch)) {
             throw new RuntimeException("curl init fail.");
@@ -83,6 +82,7 @@ class Curl {
 
         if ((CurlOpt::CURLOPT_RETURNTRANSFER === $option) && ($value == true)) {
             $this->returnType = CurlOpt::CURLOPT_RETURNTRANSFER;
+            $this->writeData = $this->libWriteFFI->new("memory_data");
             $this->libCurlFFI->curl_easy_setopt($this->ch, CurlOpt::CURLOPT_WRITEDATA, FFI::addr($this->writeData));
             return $this->libCurlFFI->curl_easy_setopt($this->ch, CurlOpt::CURLOPT_WRITEFUNCTION, $this->libWriteFFI->init());
         }
@@ -106,7 +106,7 @@ class Curl {
         }
 
         if (CurlOpt::CURLOPT_RETURNTRANSFER === $this->returnType) {
-            $result =  FFI::string($this->writeData->buf, $this->writeData->size);
+            $result =  FFI::string($this->writeData->data, $this->writeData->size);
             // FFI::free(FFI::addr($this->writeData));
             return $result;
         }
@@ -283,7 +283,7 @@ class Curl {
         if ($cType === 'string') {
             if (CurlOpt::CURLOPT_OK === $this->libCurlFFI->curl_easy_getinfo($this->ch, $curlInfo, FFI::addr($string))) {
                 if (FFI::isNull($string)) {
-                    return null;
+                    return '';
                 }
                 return FFI::string($string);
             }

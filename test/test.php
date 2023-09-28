@@ -14,8 +14,8 @@ use Ctzjj\CurlImpersonate\Impersonate;
 $curl = Impersonate::getCurlInstance(Impersonate::CHROME_110);
 
 //$url = "https://tls.browserleaks.com/json";
-//$url = "https://www.baidu.com";
-$url = "http://curl.test";
+$url = "https://www.baidu.com";
+//$url = "http://curl.test";
 //$url = 'https://ascii2d.net';
 
 
@@ -28,7 +28,7 @@ $curl->curlSetOpt(CurlOpt::CURLOPT_CERTINFO, 1);
 $curl->curlSetOpt(CurlOpt::CURLOPT_SSL_VERIFYPEER, 0);
 $curl->curlSetOpt(CurlOpt::CURLOPT_HEADER, true);
 $curl->curlSetOpt(CurlOpt::CURLOPT_RETURNTRANSFER, true);
-$curl->curlSetOpt(CurlOpt::CURLOPT_HTTPHEADER, ['x-requested-with:AJAX-32134214392fqr321df2r3=============']);
+//$curl->curlSetOpt(CurlOpt::CURLOPT_HTTPHEADER, ['x-requested-with:AJAX-32134214392fqr321df2r3=============']);
 
 //$curl->curlSetOpt(CurlOpt::CURLOPT_PROXYTYPE, 'http');
 //$curl->curlSetOpt(CurlOpt::CURLOPT_PROXY, '127.0.0.1');
