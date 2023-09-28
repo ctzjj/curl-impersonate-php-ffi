@@ -33,7 +33,7 @@ class RequestTest extends TestCase {
         // application/x-www-form-urlencoded
         $curl->curlSetOpt(CurlOpt::CURLOPT_URL, $url);
         $curl->curlSetOpt(CurlOpt::CURLOPT_RETURNTRANSFER, true);
-        $curl->curlSetOpt(CurlOpt::CURLOPT_POST, true);
+        $curl->curlSetOpt(CurlOpt::CURLOPT_POST, 1);
         $curl->curlSetOpt(CurlOpt::CURLOPT_POSTFIELDS, http_build_query(['foo' => 'bar']));
         $ret = $curl->curlExec();
         $this->assertTrue(stripos($ret, '"foo": "bar"') !== false);
