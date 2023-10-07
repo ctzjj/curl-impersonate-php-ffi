@@ -1,5 +1,5 @@
 # curl-impersonate-php-ffi
-[![Build and test](https://github.com/ctzjj/curl-impersonate-php-ffi/actions/workflows/php.yml/badge.svg)](https://github.com/ctzjj/curl-impersonate-php-ffi/actions/workflows/php.yml)
+[![tests](https://github.com/ctzjj/curl-impersonate-php-ffi/actions/workflows/php.yml/badge.svg)](https://github.com/ctzjj/curl-impersonate-php-ffi/actions/workflows/php.yml)
 
   ⚠ Not tested, pleasedo not use in production environment.
   
