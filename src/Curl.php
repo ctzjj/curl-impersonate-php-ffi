@@ -97,9 +97,9 @@ class Curl {
         $int = $this->libCurlFFI->curl_easy_perform($this->ch);
 
         // free opt slist
-        foreach ($this->curlOptSlistPtrs as &$ptr) {
-            $this->libCurlFFI->curl_slist_free_all($ptr);
-        }
+//        foreach ($this->curlOptSlistPtrs as &$ptr) {
+//            $this->libCurlFFI->curl_slist_free_all($ptr);
+//        }
         $this->curlOptSlistPtrs = [];
 
         if ($int !== CurlOpt::CURLOPT_OK) {
