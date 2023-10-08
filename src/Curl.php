@@ -82,15 +82,20 @@ class Curl {
 
         if ((CurlOpt::CURLOPT_RETURNTRANSFER === $option) && ($value == true)) {
             $this->returnType = CurlOpt::CURLOPT_RETURNTRANSFER;
-            $this->writeData = $this->libWriteFFI->new("memory_data");
-            $this->libCurlFFI->curl_easy_setopt($this->ch, CurlOpt::CURLOPT_WRITEDATA, FFI::addr($this->writeData));
-            return $this->libCurlFFI->curl_easy_setopt($this->ch, CurlOpt::CURLOPT_WRITEFUNCTION, $this->libWriteFFI->init());
+            return CurlOpt::CURLOPT_OK;
         }
 
         return $this->libCurlFFI->curl_easy_setopt($this->ch, $option, $value);
     }
 
     public function curlExec() {
+
+        if (CurlOpt::CURLOPT_RETURNTRANSFER === $this->returnType) {
+            $this->writeData = $this->libWriteFFI->new("memory_data");
+            $this->libCurlFFI->curl_easy_setopt($this->ch, CurlOpt::CURLOPT_WRITEDATA, FFI::addr($this->writeData));
+            $this->libCurlFFI->curl_easy_setopt($this->ch, CurlOpt::CURLOPT_WRITEFUNCTION, $this->libWriteFFI->init());
+        }
+
         $int = $this->libCurlFFI->curl_easy_perform($this->ch);
 
         // free opt slist
@@ -101,13 +106,13 @@ class Curl {
 
         if ($int !== CurlOpt::CURLOPT_OK) {
             $this->errorNo = $int;
-            // FFI::free(FFI::addr($this->writeData));
+            // FFI::free($this->writeData);
             return false;
         }
 
         if (CurlOpt::CURLOPT_RETURNTRANSFER === $this->returnType) {
             $result =  FFI::string($this->writeData->data, $this->writeData->size);
-            // FFI::free(FFI::addr($this->writeData));
+             // FFI::free($this->writeData);
             return $result;
         }
         // TODO
