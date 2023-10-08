@@ -22,8 +22,6 @@ class Curl {
 
     private bool $isDestroyed;
 
-    private FFI\CData $writeData;
-
     private array $curlOptSlistPtrs = [];
 
     public function __construct($impersonate, $libCurlPath, $libWritePath) {
@@ -91,8 +89,8 @@ class Curl {
     public function curlExec() {
 
         if (CurlOpt::CURLOPT_RETURNTRANSFER === $this->returnType) {
-            $this->writeData = $this->libWriteFFI->new("memory_data");
-            $this->libCurlFFI->curl_easy_setopt($this->ch, CurlOpt::CURLOPT_WRITEDATA, FFI::addr($this->writeData));
+            $writeData = $this->libWriteFFI->new("memory_data");
+            $this->libCurlFFI->curl_easy_setopt($this->ch, CurlOpt::CURLOPT_WRITEDATA, FFI::addr($writeData));
             $this->libCurlFFI->curl_easy_setopt($this->ch, CurlOpt::CURLOPT_WRITEFUNCTION, $this->libWriteFFI->init());
         }
 
@@ -106,13 +104,13 @@ class Curl {
 
         if ($int !== CurlOpt::CURLOPT_OK) {
             $this->errorNo = $int;
-            // FFI::free($this->writeData);
+            FFI::free(FFI::addr($writeData));
             return false;
         }
 
         if (CurlOpt::CURLOPT_RETURNTRANSFER === $this->returnType) {
-            $result =  FFI::string($this->writeData->data, $this->writeData->size);
-             // FFI::free($this->writeData);
+            $result =  FFI::string($writeData->data, $writeData->size);
+            FFI::free(FFI::addr($writeData));
             return $result;
         }
         // TODO
